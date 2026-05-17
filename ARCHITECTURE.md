@@ -1,14 +1,158 @@
 # Architecture — WABAC Machine
 
-*A generalized platform for autonomous research intelligence.*
+*A generalized platform for autonomous research intelligence and evaluation-driven self-improvement.*
 
 ---
 
 ## Design Philosophy
 
-The architecture is organized around one insight: **the system must be able to absorb sources and tools that do not yet exist.** Every design decision bends toward this goal.
+Two insights drive the architecture:
 
-The architecture has five layers, each with a narrow interface to the layers above and below. No layer knows the implementation details of any other layer.
+1. **The system must be able to absorb sources and tools that do not yet exist.** Every design decision bends toward this goal.
+2. **The system's ultimate purpose is self-improvement.** Every capability exists to serve the eval → insight → improvement → eval loop.
+
+The architecture has six layers. Layer 0 is the foundation that powers everything else — it is not optional. Layers 1–5 deliver intelligence; Layer 0 uses that intelligence to make every agent smarter.
+
+No layer knows the implementation details of any other layer.
+
+---
+
+## Layer 0: Eval & Self-Improvement Layer
+
+### Purpose
+
+The reason the WABAC Machine exists. Everything serves this.
+
+This layer evaluates every action across the entire agent ecosystem, mines the results for improvement opportunities, synthesizes self-improvement loops, and deploys them. It is the flywheel that turns research intelligence into measurable capability gains.
+
+*Karpathy's AutoResearch is one example of this pattern. The WABAC Machine generalizes it: eval everything, improve continuously, teach every agent to do the same.*
+
+### The Eval Flywheel
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    THE FLYWHEEL                               │
+│                                                               │
+│  Agent Activity ──→ Eval Data ──→ Gap Analysis                │
+│       ↑                              │                        │
+│       │                              ▼                        │
+│  Better Agents ←── Deployment ←── Improvement Loops          │
+│                                                               │
+│  Each cycle:                                                   │
+│  - More activity generates more eval data                     │
+│  - More eval data reveals more gaps                           │
+│  - More gaps trigger more improvement loops                   │
+│  - More loops mean better agents                              │
+│  - Better agents generate more (and better) activity          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+#### Eval Registry
+
+Every agent action type has a corresponding eval. The registry defines:
+
+```
+EvalSpec {
+  actionType: string           // "paper_ingestion", "report_generation",
+                               // "tool_selection", "code_generation", ...
+  evalType: "automated" |     // Scored by an eval agent automatically
+            "outcome" |       // Scored by the result (did the build succeed?)
+            "human"           // Scored by human feedback
+  scoring: EvalScoring        // How to score (0–1, pass/fail, rubric)
+  schedule: "per_action" |    // Every time
+            "sampled" |       // Random sample
+            "periodic"        // Batch eval on schedule
+}
+```
+
+#### Eval Runner
+
+Takes an agent action + its context and produces an `EvalResult`:
+
+```
+EvalResult {
+  actionId: string
+  agentId: string
+  actionType: string
+  score: number          // 0.0 – 1.0
+  rubric: { dimension: score }[]
+  strengths: string[]    // What went well
+  gaps: string[]         // What could improve
+  context: {             // What was the agent trying to do?
+    task: string
+    toolsAvailable: string[]
+    toolsUsed: string[]
+    outcome: string
+  }
+  evaluatedAt: string
+}
+```
+
+#### Gap Analyzer
+
+Mines the accumulated `EvalResult` store for patterns:
+
+- **Coverage gaps:** "No agent in the fleet knows about technique X"
+- **Skill gaps:** "Agents consistently underperform on task type Y"
+- **Tool gaps:** "Agents always use approach A, but B is 3x better and in the graph"
+- **Knowledge gaps:** "The graph has 0 entries about emerging topic Z even though it's trending"
+- **Consistency gaps:** "Agent A succeeds at X, Agent B fails at X — what does A know that B doesn't?"
+
+Each gap is an improvement opportunity with evidence.
+
+#### Improvement Loop Synthesizer
+
+For each identified gap, produces a `SelfImprovementLoop`:
+
+```
+SelfImprovementLoop {
+  gap: GapDescription       // What's wrong
+  evidence: EvalResult[]    // Why we know it's wrong
+  improvement: {
+    type: "knowledge_injection" |    // Add facts to agent context
+          "tool_recommendation" |    // Suggest a different tool
+          "technique_change" |       // Use a different approach
+          "training_pattern" |       // Add a recurring eval-driven practice
+          "configuration_tweak"      // Change a parameter
+    payload: { ... }                 // What to deploy
+    expectedImpact: string           // Predicted improvement
+  }
+  validation: {
+    evalSpec: EvalSpec               // How to measure if it worked
+    baselineScore: number            // Score before intervention
+  }
+  status: "proposed" | "testing" | "deployed" | "retired"
+}
+```
+
+#### Loop Deployer
+
+Distributes improvement loops to the target agents. The delivery mechanism depends on the loop type:
+- **Knowledge injection** → add to agent's context (memory, knowledge file)
+- **Tool recommendation** → push advisory to agent
+- **Technique change** → update agent's instructions/prompts
+- **Training pattern** → create a recurring eval-driven practice task
+- **Configuration tweak** → update agent's config profile
+
+#### Eval-Driven Prioritization
+
+The improvement loop also feeds back into the WABAC Machine's own priorities:
+
+> "The fleet keeps failing at implementing efficient attention. That means I, Peabody, should prioritize attention mechanism research in my knowledge graph. The evals are telling me where to hunt."
+
+This creates the ultimate flywheel: **agent failures guide research priorities, which produce better knowledge, which enable better agents, which surface the next set of gaps.**
+
+### Relationship to Other Layers
+
+| Other Layer | What Layer 0 Gets From It | What Layer 0 Gives Back |
+|-------------|---------------------------|------------------------|
+| Source Layer | Signals about new tools/techniques | Prioritized topics to hunt |
+| Extraction | Entities that agents should know about | Gap-driven extraction priorities |
+| Knowledge Graph | Structured knowledge to inject into agents | Insight about what's missing |
+| Synthesis | Reports that identify best practices | Eval data on report quality |
+| Advisory | Delivery channel for improvement loops | The loops themselves |
 
 ---
 
@@ -275,26 +419,35 @@ Advisories are delivered to target agents via:
 
 ---
 
-## The Agentic Research Loop
+## The Agentic Research Loop (with Self-Improvement)
 
-This is the core runtime that distinguishes the WABAC Machine from a passive pipeline.
+This is the core runtime that distinguishes the WABAC Machine from a passive pipeline. It includes the self-improvement loop that makes the entire system smarter over time.
 
 ```
-┌─────────────────────────────────────────────┐
-│                 Orchestrator                  │
-│                                              │
-│  Loop:                                       │
-│    1. Scan sources for new signals           │
-│    2. For each signal, evaluate significance │
-│    3. If significant:                        │
-│       a. Extract entities + relationships    │
-│       b. Pursue linked URLs                  │
-│       c. For each pursued URL → recurse      │
-│    4. Update knowledge graph                 │
-│    5. Check for advisory triggers            │
-│    6. Dispatch advisories if needed          │
-│    7. Sleep / wait for next tick             │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                   Orchestrator                        │
+│                                                       │
+│  Research Loop (outer):                               │
+│    1. Scan sources for new signals                    │
+│    2. For each signal, evaluate significance          │
+│    3. If significant:                                 │
+│       a. Extract entities + relationships              │
+│       b. Pursue linked URLs                            │
+│       c. For each pursued URL → recurse                │
+│    4. Update knowledge graph                           │
+│    5. Check for advisory triggers                     │
+│    6. Dispatch advisories if needed                   │
+│    7. Sleep / wait for next tick                      │
+│                                                       │
+│  Self-Improvement Loop (inner, continuous):           │
+│    1. Collect eval results from all agents            │
+│    2. Analyze for gaps and patterns                   │
+│    3. Synthesize improvement loops                    │
+│    4. Deploy to target agents                         │
+│    5. Measure impact via evals                        │
+│    6. Retire / refine loops based on results          │
+│    7. Feed insights back into research priorities     │
+└──────────────────────────────────────────────────────┘
 ```
 
 ### Significance Evaluation

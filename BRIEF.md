@@ -8,15 +8,19 @@
 
 ## Vision
 
-A self-directed research intelligence that traces the lineage of every significant idea in artificial intelligence — from its intellectual origins to its latest expression — and uses that understanding to make the entire agent ecosystem smarter, more current, and more capable.
+A self-directed research intelligence that traces the lineage of every significant idea in artificial intelligence — from its intellectual origins to its latest expression — and uses that understanding to drive evaluation-driven self-improvement across every agent in the ecosystem.
 
-The WABAC Machine is not a pipeline. It is a hunter.
+The system evaluates everything it and its agents do. It mines the results for gaps. It synthesizes improvement loops. It deploys them. It measures their impact. It gets better at getting better. **This is the flywheel that raises performance across the entire fleet.**
+
+Karpathy's AutoResearch is one example. The WABAC Machine generalizes it.
+
+The WABAC Machine is not a pipeline. It is a hunter — and every hunt makes the pack smarter.
 
 ## What We're Commissioning
 
 We are not building a single application. We are launching a **platform for autonomous research intelligence** composed of many small, independent projects, each marching toward the same North Star (see [`NORTH_STAR.md`](./NORTH_STAR.md)).
 
-The system has five conceptual layers:
+The system has six conceptual layers. Layer 0 is the foundation that powers everything else:
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -34,6 +38,11 @@ The system has five conceptual layers:
 ├─────────────────────────────────────────────┤
 │  Source Layer                                │
 │  (pluggable adapters — any source, any form) │
+├─────────────────────────────────────────────┤
+│  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲  ▲ │
+│  Layer 0: Eval & Self-Improvement           │
+│  (eval everything → mine gaps → improve →   │
+│   repeat — powers every layer above)        │
 └─────────────────────────────────────────────┘
 ```
 

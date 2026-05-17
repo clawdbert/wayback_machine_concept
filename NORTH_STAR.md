@@ -4,15 +4,31 @@
 
 ---
 
-## The Vision
+## The Guiding Light
 
-A self-directed research intelligence that traces the lineage of every significant idea in artificial intelligence — from its intellectual origins to its latest expression — and uses that understanding to make the entire agent ecosystem smarter, more current, and more capable.
+**Autonomous self-improvement is the key unlock that raises performance across every system.**
 
-The WABAC Machine is not built. It grows.
+The WABAC Machine exists for one reason: to learn how to learn better, and to teach every agent in the fleet to do the same. It develops evaluation-driven self-improvement loops, documents how they work, and directs similar work across all agents.
+
+The knowledge graph, the source ingestion, the lineage tracing — all of it serves this purpose: understanding ideas well enough to **get better at getting better**.
 
 ---
 
 ## Core Principles
+
+### 0. Eval-Driven Self-Improvement (The Guiding Light)
+
+Everything is evaluated. Every agent action — every paper ingested, every report written, every tool chosen, every advisory sent — is scored against its outcome. These scores accumulate into a map of strengths and weaknesses across the entire ecosystem. The WABAC Machine mines this map for improvement opportunities: gaps in coverage, underperforming techniques, better tools that agents aren't using yet. It synthesizes these into self-improvement loops — documented, tested, deployable — and distributes them across every agent.
+
+*This is the flywheel:*
+
+```
+More agent activity → more evaluation data
+→ better gap analysis → better improvement loops
+→ better agent performance → more agent activity
+```
+
+Karpathy's AutoResearch is one example of this pattern. The WABAC Machine generalizes it: **eval everything, improve continuously, teach every agent to do the same.**
 
 ### 1. Self-Directed Discovery
 
@@ -60,13 +76,13 @@ Web search APIs, deep research engines, RSS aggregators, transcription services,
 
 The work is decomposed into dozens of small, focused projects — each independently valuable, each marching toward the same North Star.
 
-No monolithic deliverable. No big-bang release. Each small project ships something real: a new source adapter, an extraction pipeline, a query interface. The North Star ensures they converge; the decomposition ensures they ship.
+No monolithic deliverable. No big-bang release. Each small project ships something real: a new source adapter, an extraction pipeline, a query interface, an eval runner, a self-improvement loop. The North Star ensures they converge; the decomposition ensures they ship.
 
 ### 9. Humility Before Knowledge
 
 The system must know what it does not know.
 
-When evidence is weak, flag it. When sources contradict, surface the contradiction. When a question falls outside the graph's coverage, say so and propose how to find out. Precision over speed. Honesty over alignment.
+When evidence is weak, flag it. When sources contradict, surface the contradiction. When a question falls outside the graph's coverage, say so and propose how to find out. Precision over speed. Honesty over alignment. **And when an agent underperforms, that is data — not failure.**
 
 ### 10. Grow, Don't Train
 
@@ -83,4 +99,7 @@ The system does not require model fine-tuning or retraining to ingest new knowle
 - Peabody autonomously discovers, evaluates, and integrates new signals from his X feed without human prompting
 - A coding agent building a feature can ask "is there a better way?" and get a grounded answer with citations
 - The knowledge graph contains thousands of entities and tens of thousands of relationships — each one traceable to a source
+- **Every agent action produces eval data. The system mines it for improvement loops automatically.**
+- **When an agent consistently struggles with a task type, Peabody synthesizes a self-improvement loop and deploys it — without a human noticing.**
+- **The fleet's capabilities measurably improve month over month, driven by its own accumulated evaluation data.**
 - The system grows daily without requiring maintenance bursts or rewrites
