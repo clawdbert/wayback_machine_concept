@@ -4,7 +4,51 @@
 
 ---
 
-## 1. Schema Before Pipeline
+## 0. Markdown Files Are the System of Record. Everything Else Is a Projection.
+
+**Opinion:** All knowledge is stored in human-readable, agent-browsable markdown files on disk — filesystem first. Graph databases, vector stores, and any other query substrate are derived projections optimized for specific access patterns. Writes always flow to markdown first; the projections are rebuilt from the markdown sources.
+
+**Rationale:** The underlying technology (graph DBs, vector stores, embedding models, every SaaS tool) will change. Markdown files on a filesystem will not. This is the one format we can guarantee every agent, every app, every developer tool, and every future technology will be able to read. By making markdown the system of record, we decouple our data from our tech stack.
+
+**Architecture:**
+```
+Write → Markdown file (system of record)
+         → triggers a write service
+         → updates graph DB projection
+         → updates vector store projection (if applicable)
+         → indexes for search
+
+Read ← Agent queries the graph DB or vector store
+         → but can always fall back to reading markdown directly
+
+Migration ← New query technology appears
+         → Rebuild projection from markdown files
+         → Zero data migration, zero lock-in
+```
+
+**Specific rules:**
+- No direct writes to any database. All writes flow through small services that write markdown first, then synchronize to DBs.
+- Graph DBs are for querying (path traversal, semantic similarity). They are not the source of truth.
+- Entity relationships are explicitly recorded in markdown templates via links and structured frontmatter — not just in the graph.
+- A markdown file should be self-contained enough that a simple filesystem grep can answer basic questions without any database running.
+
+---
+
+## 1. Typed Interfaces Over Ad-Hoc Integration
+
+**Opinion:** Every interface between components must be typed and agnostic about "how" the request is served. Agent-to-agent, agent-to-service, service-to-service — all typed. Ad-hoc, unstructured communication is reserved exclusively for humans (Rob).
+
+**Rationale:** Agents cannot negotiate ad-hoc protocols. They need stable, well-defined boundaries with reliable expectations. If an interface changes, agents break. By making every interface typed and tech-agnostic, we enable:
+- Swapping underlying implementations without changing consumers
+- Multiple implementations of the same interface (test harness, prod, mock)
+- Confidence that agents calling the interface will get what they expect
+- Clear error boundaries and fault isolation
+
+**Convention:** Every interface is defined by its schema (inputs, outputs, error states) and documented separately from any implementation. The schema file is the contract.
+
+---
+
+## 2. Schema Before Pipeline
 
 **Opinion:** Design and stabilize the knowledge graph schema *before* building ingestion pipelines.
 
@@ -14,7 +58,7 @@
 
 ---
 
-## 2. Entities Are First-Class Citizens, Relationships Are the Point
+## 3. Entities Are First-Class Citizens, Relationships Are the Point
 
 **Opinion:** The graph lives or dies on the quality and variety of its *relationship types*, not the depth of its entity details.
 
@@ -24,7 +68,7 @@
 
 ---
 
-## 3. Provenance Is Non-Negotiable
+## 4. Provenance Is Non-Negotiable
 
 **Opinion:** Every single statement in the graph must be traceable to its source. No exceptions.
 
@@ -38,7 +82,7 @@
 
 ---
 
-## 4. Human Curation > Automated Extraction (for Relationships)
+## 5. Human Curation > Automated Extraction (for Relationships)
 
 **Opinion:** Relationship extraction should not be fully automated. The system should propose relationships, a human or trusted agent should confirm.
 
@@ -48,7 +92,7 @@
 
 ---
 
-## 5. Reports Are the Product, Not the Graph
+## 6. Reports Are the Product, Not the Graph
 
 **Opinion:** The knowledge graph is infrastructure. The *reports* are what users see and value.
 
@@ -58,7 +102,7 @@
 
 ---
 
-## 6. Start Narrow, Go Deep
+## 7. Start Narrow, Go Deep
 
 **Opinion:** Initial coverage should be narrow (e.g. "attention mechanisms" or "RLHF") but deep — full lineage, multiple comparisons, detailed evaluations.
 
@@ -68,7 +112,7 @@
 
 ---
 
-## 7. Relationship Graphs Are Not Citation Graphs
+## 8. Relationship Graphs Are Not Citation Graphs
 
 **Opinion:** Do not confuse a relationship graph with a citation graph. Citation graphs answer "who references whom?" Relationship graphs answer "how does idea A relate to idea B?" These are fundamentally different.
 
@@ -76,7 +120,7 @@
 
 ---
 
-## 8. Agent-First, Human-Second Interfaces
+## 9. Agent-First, Human-Second Interfaces
 
 **Opinion:** The primary consumers are AI agents (coding agents, specialist agents). Human-readable reports are a secondary concern.
 
@@ -86,7 +130,7 @@
 
 ---
 
-## 9. No Re-training Required
+## 10. No Re-training Required
 
 **Opinion:** The system should not require model fine-tuning or retraining to add new knowledge.
 
@@ -96,7 +140,7 @@
 
 ---
 
-## 10. Measure What Matters
+## 11. Measure What Matters
 
 **Opinion:** The key metric is not how many papers are in the graph, but:
 - How long to answer a research question?

@@ -347,15 +347,147 @@ Every entity and relationship stores:
 }
 ```
 
-### Storage
+### Storage: Markdown-First, Graph as Projection
 
-The graph is stored in a format that supports:
-- Path queries: "find all entities reachable from Paper X through builds-on edges"
-- Property filters: "find all papers about attention published after 2023"
-- Provenance queries: "who added this relationship and from what source?"
-- Periodic consolidation: merge duplicates, flag stale entries, promote frequently-accessed entities
+#### System of Record: On-Disk Markdown Files
 
-The storage backend is swappable (local files, graph database, vector DB). The query interface is the contract.
+All knowledge is stored as markdown files on disk. This is the source of truth. Every entity type has a directory; every entity is a file; relationships are recorded in structured YAML frontmatter and inline links.
+
+```
+~/wiki/
+├── papers/
+│   ├── attention-is-all-you-need.md
+│   ├── grouped-query-attention.md
+│   └── flash-attention.md
+├── people/
+│   ├── ashish-vaswani.md
+│   ├── noam-shazeer.md
+│   └── tri-dao.md
+├── methods/
+│   ├── multi-head-attention.md
+│   └── grouped-query-attention.md
+├── labs/
+│   └── google-brain.md
+├── models/
+│   ├── gpt-4.md
+│   └── llama-3.md
+├── datasets/
+│   └── mmlu.md
+├── benchmarks/
+│   └── humaneval.md
+├── concepts/
+│   ├── attention.md
+│   └── emergent-abilities.md
+└── _relationships/
+    ├── builds-on.md         # Table of builds-on edges
+    ├── supersedes.md        # Table of supersedes edges
+    └── contradicts.md       # Table of contradicts edges
+```
+
+#### Markdown Template (Example: Paper)
+
+```markdown
+---
+id: "attention-is-all-you-need"
+type: paper
+published: "2017-06-12"
+venue: "NeurIPS 2017"
+authors:
+  - "ashish-vaswani"
+  - "noam-shazeer"
+  # ...
+tags:
+  - transformer
+  - attention
+  - sequence-to-sequence
+builds-on:
+  - "neural-machine-translation-by-jointly-learning-to-align-and-translate"
+  - "attention-and-memory-in-recurrent-models"
+superseded-by:
+  - "grouped-query-attention"
+  - "flash-attention"
+introduces:
+  - "transformer"  # key method
+  - "scaled-dot-product-attention"  # key method
+provenance:
+  - source_url: "https://arxiv.org/abs/1706.03762"
+    ingested_at: "2026-05-16"
+    confidence: "high"
+---
+
+# Attention Is All You Need
+
+[Summary and notes...]
+```
+
+#### Why Markdown Files?
+
+| Property | Why It Matters |
+|----------|---------------|
+| **Universal readability** | Every agent, every app, every dev tool can read markdown. No DB client needed. |
+| **Grep-able** | `grep -r "flash-attention" ~/wiki/papers/` answers basic questions instantly. |
+| **Version controllable** | Git tracks every change. Full history, rollback, branching. |
+| **Editor-agnostic** | Vim, VSCode, Obsidian, any future tool — all work. |
+| **Decoupled from tech stack** | The underlying DB, embedding model, search engine — all can be swapped. The markdown files endure. |
+| **Self-contained** | A single markdown file contains the entity, its metadata, its relationships, and its provenance. No graph query needed for basic facts. |
+
+#### Projection: Graph Database
+
+A graph DB (or any graph query substrate) is built from the markdown files and kept synchronized. It exists to answer queries that are impractical with filesystem grep:
+
+- Path queries: "Find the shortest path from attention-is-all-you-need to mla"
+- Neighborhood queries: "What entities are connected to grouped-query-attention within 2 hops?"
+- Semantic similarity: "Which papers are about attention but not about transformers?"
+
+#### Write Flow
+
+```
+External signal (ingestion, advisory, manual entry)
+         │
+         ▼
+┌──────────────────┐
+│  Write Service    │  ← Small, single-purpose service
+│                   │
+│  1. Write markdown│  ← Always first. System of record updated.
+│     file          │
+│  2. Sync to graph │  ← Update the graph DB projection
+│     DB            │
+│  3. Sync to vector│  ← Update vector store (if applicable)
+│     store         │
+│  4. Invalidate    │  ← Expire any stale indexes
+│     caches        │
+└──────────────────┘
+```
+
+**Rule: No direct writes to any database ever. All writes flow through the write service, which writes markdown first.**
+
+#### Read Flow
+
+```
+Agent query
+    │
+    ▼
+┌──────────────┐
+│  Router       │  ← Typed interface, tech-agnostic
+│              │
+│  Uses graph  │  ← For path queries, neighborhoods,
+│  DB for:     │     semantic similarity
+│              │
+│  Falls back  │  ← For simple CRUD, grep, fallback
+│  to markdown │     when graph DB is unavailable
+└──────────────┘
+```
+
+#### Migration
+
+When a new query technology emerges (a better graph DB, a different embedding model, a brand-new search paradigm):
+
+1. Write a new projection builder that reads from markdown files
+2. Build the new projection
+3. Switch the router to the new backend
+4. Retire the old backend
+
+**Zero data migration. Zero lock-in.** The markdown files are the invariant.
 
 ---
 

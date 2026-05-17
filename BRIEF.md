@@ -20,6 +20,16 @@ The WABAC Machine is not a pipeline. It is a hunter — and every hunt makes the
 
 We are not building a single application. We are launching a **platform for autonomous research intelligence** composed of many small, independent projects, each marching toward the same North Star (see [`NORTH_STAR.md`](./NORTH_STAR.md)).
 
+### Foundational Technical Philosophy
+
+Two commitments govern every architectural decision:
+
+1. **Markdown files are the system of record.** All knowledge lives in human-readable, agent-browsable markdown files on disk. Graph databases, vector stores, and search indexes are derived projections rebuilt from these files. Writes always flow to markdown first; databases are synchronized afterward. This decouples our data from our tech stack and ensures zero lock-in when underlying technology changes.
+
+2. **Typed interfaces over ad-hoc integration.** Every component boundary has a typed schema contract that is agnostic about "how" the request is served. This enables swapping implementations, coexisting alternatives (mock, prod, test), and reliable agent-to-service communication. Ad-hoc, unstructured communication is reserved exclusively for humans (Rob).
+
+These commitments are detailed in [`OPINIONS.md`](./OPINIONS.md) (Opinions 0 and 1).
+
 The system has six conceptual layers. Layer 0 is the foundation that powers everything else:
 
 ```

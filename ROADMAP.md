@@ -27,8 +27,11 @@ The roadmap is organized into **phases**, each containing **projects**. A phase 
 | P0.6 | **Lineage Query Prototype** | A script that, given a paper ID, walks the graph and produces a lineage text. Prove synthesis works. | P0.5 | Small |
 | P0.7 | **Gap Analyzer Prototype** | Given a collection of EvalResults, produce a gap analysis report. Prove the eval flywheel. | P0.0 | Small |
 | P0.8 | **Notion/Tweetsmash Adapter** | First real source adapter. Pull bookmarks from the existing Notion database. Produce Signals. | P0.3 | Medium |
+| P0.9 | **Markdown Template Standard** | Define the markdown file format for every entity type. Frontmatter schema, relationship link conventions, directory structure. This is the contract that ensures every write service produces files that agents can parse reliably. | P0.1 | Small |
+| P0.10 | **Write Service Prototype** | A small, single-purpose service that: (1) writes markdown files per the template standard, (2) syncs to a graph DB projection. Proves the write flow. | P0.9, P0.2 | Medium |
+| P0.11 | **Graph Projection Builder** | Reads all markdown files and rebuilds the graph DB projection from scratch. Supports incremental sync. | P0.9, P0.10 | Medium |
 
-**Phase 0 exit criterion:** A person or agent can query "tell me about [technique]" and get a lineage report, sourced from at least 10 manually ingested papers plus Notion bookmarks. The first eval runs and produces a gap analysis.
+**Phase 0 exit criterion:** A person or agent can query "tell me about [technique]" and get a lineage report, sourced from at least 10 manually ingested papers plus Notion bookmarks. The first eval runs and produces a gap analysis. A write service produces markdown files that pass the template standard. The graph DB projection can be rebuilt from markdown files alone.
 
 ---
 

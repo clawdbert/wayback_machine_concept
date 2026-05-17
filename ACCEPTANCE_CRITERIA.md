@@ -15,6 +15,27 @@ Conditions that must be met for the client (Peabody) to accept delivery. Organiz
 | KG-05 | Duplicate entities are detectable and mergeable | Merge two intentionally duplicated entries, verify consolidated result |
 | KG-06 | Stale entries (no references in 12+ months) are flagged for review | Review report identifies candidates |
 
+## AC-MD: Markdown Storage (System of Record)
+
+| ID | Criterion | Verification |
+|----|-----------|-------------|
+| MD-01 | All knowledge is stored in on-disk markdown files, one file per entity | Filesystem inspection shows entity directories with `.md` files |
+| MD-02 | Markdown files use structured YAML frontmatter per the template standard (entity ID, type, relationships, provenance) | Random sample of 10 files validated against schema |
+| MD-03 | Markdown files are self-contained: a single file contains all relationships, provenance, and metadata for that entity | Spot check: grep a file for its builds-on and supersedes relationships |
+| MD-04 | Relationship links in frontmatter reference other entity IDs, not arbitrary text | Cross-reference validation |
+| MD-05 | A basic question can be answered with filesystem grep alone — no database needed | `grep -r "flash-attention" ~/wiki/` returns all connected entities |
+| MD-06 | Graph DB and any other query stores can be rebuilt entirely from markdown files | Delete graph DB → run projection builder → verify graph matches original queries |
+| MD-07 | Writing to a database directly is impossible — all writes flow through the write service that writes markdown first | Attempt a direct DB write; it is prevented by access controls |
+
+## AC-IF: Interface Contracts
+
+| ID | Criterion | Verification |
+|----|-----------|-------------|
+| IF-01 | Every service-to-service interface has a typed schema (JSON Schema or equivalent) defined separately from its implementation | Schema files exist for every interface, documented in codebase |
+| IF-02 | Multiple implementations of the same interface can coexist (e.g. mock, prod, test harness) | Swap implementations, verify no callers break |
+| IF-03 | Interface schemas are versioned — breaking changes increment the version | Version field in schema, changelog documented |
+| IF-04 | Ad-hoc, unstructured communication is used only for human input. All agent-to-agent and agent-to-service communication uses typed interfaces | Audit: every integration point has a schema reference |
+
 ## AC-IN: Ingestion
 
 | ID | Criterion | Verification |
